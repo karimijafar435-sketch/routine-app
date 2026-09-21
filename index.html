@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="روتین روزانه">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>روتین روزانه</title>
+<style>
+:root{
+  --bg:#0b1220; --panel:#111827; --panel2:#172033; --border:#253044;
+  --text:#f3f4f6; --muted:#94a3b8; --accent:#22c55e; --accent2:#16a34a;
+  --danger:#ef4444; --shadow:0 8px 30px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#0b1220 0%,#0f172a 100%);color:var(--text);font-family:Tahoma,Arial,sans-serif;min-height:100vh}
+.app{max-width:860px;margin:0 auto;padding:16px 16px 96px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:4px 0 14px}
+.brand h1{font-size:22px;margin:0 0 5px}.brand p{margin:0;color:var(--muted);font-size:13px}
+.badge{background:rgba(34,197,94,.15);color:#86efac;padding:8px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(34,197,94,.25)}
+.card{background:rgba(17,24,39,.92);border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.progressRow{display:flex;justify-content:space-between;align-items:end;gap:16px}.progressBig{font-size:34px;font-weight:700}.muted{color:var(--muted);font-size:13px}
+.progressBar{height:12px;background:#1f2937;border-radius:999px;overflow:hidden;margin-top:12px}.progressFill{height:100%;background:linear-gradient(90deg,var(--accent),#86efac);width:0%;transition:width .25s}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;position:sticky;top:8px;z-index:5;margin:8px 0 14px}
+.tabBtn{border:1px solid var(--border);background:#0f172a;color:var(--muted);padding:11px 8px;border-radius:12px;font-size:14px;cursor:pointer}
+.tabBtn.active{background:rgba(34,197,94,.14);color:#bbf7d0;border-color:rgba(34,197,94,.45)}
+.task{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid rgba(37,48,68,.6)}.task:last-child{border-bottom:0}
+.check{appearance:none;width:24px;height:24px;border:2px solid #64748b;border-radius:8px;display:grid;place-items:center;cursor:pointer;flex:0 0 auto;background:transparent}
+.check:checked{background:var(--accent);border-color:var(--accent)}.check:checked::after{content:"✓";color:#052e16;font-weight:900}
+.taskMain{flex:1;min-width:0}.taskTitle{font-size:15px;margin-bottom:4px}.taskTime{color:#86efac;font-size:12px}.task.done .taskTitle{text-decoration:line-through;color:#94a3b8}.task.done .taskTime{color:#6b7280}
+.sectionTitle{font-size:16px;font-weight:700;margin:2px 0 12px}
+.weekGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}.dayBtn{border:1px solid var(--border);background:#0f172a;color:var(--muted);padding:10px 4px;border-radius:12px;cursor:pointer;font-size:12px}.dayBtn.active{border-color:rgba(34,197,94,.55);background:rgba(34,197,94,.12);color:#dcfce7}
+.dayBox{padding:13px;border:1px solid var(--border);border-radius:14px;margin-top:10px;background:#0f172a}.dayBox h3{margin:0 0 8px;font-size:15px}
+.field{display:flex;flex-direction:column;gap:7px;margin:11px 0}.field label{font-size:13px;color:#cbd5e1}.field input,.field textarea,.field select{background:#0f172a;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:11px;font:inherit}.field textarea{min-height:100px;resize:vertical}
+.row{display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;border-radius:12px;padding:11px 14px;cursor:pointer;font:inherit}.btn.primary{background:var(--accent);color:#052e16;font-weight:700}.btn.secondary{background:#1f2937;color:#e5e7eb;border:1px solid var(--border)}.btn.danger{background:rgba(239,68,68,.15);color:#fecaca;border:1px solid rgba(239,68,68,.3)}
+.note{font-size:12px;color:var(--muted);line-height:1.8}
+.empty{padding:18px;text-align:center;color:var(--muted)}
+@media (max-width:640px){.app{padding:12px 12px 90px}.weekGrid{grid-template-columns:repeat(4,1fr)}.progressBig{font-size:30px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><h1>روتین روزانه</h1><p id="todayLabel"></p></div>
+    <div class="badge">نسخه اول</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tabBtn active" data-tab="today">امروز</button>
+    <button class="tabBtn" data-tab="week">هفته</button>
+    <button class="tabBtn" data-tab="settings">تنظیمات</button>
+  </div>
+
+  <section id="today" class="tabPage">
+    <div class="card">
+      <div class="progressRow">
+        <div><div class="muted">پیشرفت امروز</div><div class="progressBig" id="progressText">۰٪</div></div>
+        <div class="muted" id="modeText"></div>
+      </div>
+      <div class="progressBar"><div class="progressFill" id="progressFill"></div></div>
+    </div>
+    <div class="card">
+      <div class="sectionTitle">برنامه امروز</div>
+      <div id="todayTasks"></div>
+    </div>
+    <div class="card">
+      <div class="note">ساعت کاری تا ۱۹:۰۰ در نظر گرفته شده است. وضعیت انجام فعالیت‌ها فقط روی همین دستگاه ذخیره می‌شود.</div>
+    </div>
+  </section>
+
+  <section id="week" class="tabPage" style="display:none">
+    <div class="card">
+      <div class="sectionTitle">نمای هفتگی</div>
+      <div class="weekGrid" id="weekDays"></div>
+      <div id="weekDetail"></div>
+    </div>
+  </section>
+
+  <section id="settings" class="tabPage" style="display:none">
+    <div class="card">
+      <div class="sectionTitle">تنظیمات</div>
+      <div class="field"><label>نام برنامه</label><input id="appNameInput" type="text"></div>
+      <div class="field"><label>فعال‌سازی اعلان‌ها</label>
+        <select id="notifyInput"><option value="off">خاموش</option><option value="on">روشن</option></select>
+      </div>
+      <div class="field"><label>فعالیت‌های دوشنبه تا جمعه (هر خط یک فعالیت با قالب: ساعت | عنوان)</label><textarea id="workInput"></textarea></div>
+      <div class="field"><label>فعالیت‌های شنبه و یکشنبه (هر خط یک فعالیت با قالب: ساعت | عنوان)</label><textarea id="weekendInput"></textarea></div>
+      <div class="row">
+        <button class="btn primary" id="saveBtn">ذخیره تنظیمات</button>
+        <button class="btn secondary" id="resetBtn">بازگردانی پیش‌فرض</button>
+        <button class="btn danger" id="clearBtn">پاک‌کردن وضعیت امروز</button>
+      </div>
+      <p class="note">اعلان‌ها در این نسخه فقط به‌صورت تنظیم ذخیره می‌شوند و هنوز اعلان سیستمی ارسال نمی‌شود.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+const faDigits = n => String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+const defaults = {
+  appName: 'روتین روزانه',
+  notify: 'off',
+  work: [
+    ['04:00–04:10','نماز + آب + صبحانه سبک'],
+    ['04:10–06:00','ترید سشن توکیو'],
+    ['06:00–07:00','چرت'],
+    ['07:00–09:00','مدرسه بچه‌ها + پیاده‌روی کوتاه + دوش + روتین روزانه'],
+    ['09:00–11:00','ترید سشن لندن؛ در صورت نبود ستاپ، بک‌تست استراتژی'],
+    ['11:00–13:00','آموزش / خرید / مسائل منزل'],
+    ['13:00–14:00','ناهار + استراحت به‌صورت چرت'],
+    ['14:00–15:00','بررسی معاملات گذشته + روند بازار + تحلیل مولتی‌تایم‌فریم'],
+    ['15:00–16:00','شروع سشن نیویورک + آماده‌سازی برای ترید'],
+    ['16:00–19:00','ترید سشن نیویورک + ژورنال‌نویسی روزانه'],
+    ['19:00–20:00','استراحت / کار شخصی / تفریح'],
+    ['20:00–21:00','شام + خانواده'],
+    ['21:00–22:00','وقت آزاد + خانواده، بدون ترید و چارت'],
+    ['22:00–23:00','آماده‌سازی خواب و آرام‌سازی'],
+    ['23:00','خواب']
+  ],
+  weekend: [
+    ['04:00–07:00','خواب'],
+    ['07:00–09:00','مدرسه بچه‌ها + پیاده‌روی کوتاه + دوش + روتین روزانه'],
+    ['09:00–11:00','بک‌تست استراتژی'],
+    ['11:00–13:00','آموزش / خرید / مسائل منزل'],
+    ['13:00–14:00','ناهار + چرت'],
+    ['14:00–15:00','بررسی معاملات گذشته + روند بازار + تحلیل مولتی‌تایم‌فریم'],
+    ['15:00–16:00','آموزش'],
+    ['16:00–19:00','آموزش + تفریح'],
+    ['19:00–20:00','استراحت / کار شخصی / تفریح'],
+    ['20:00–21:00','شام + خانواده'],
+    ['21:00–22:00','وقت آزاد + خانواده'],
+    ['22:00–23:00','آماده‌سازی خواب'],
+    ['23:00','خواب']
+  ]
+};
+let cfg = JSON.parse(localStorage.getItem('routine_cfg') || 'null') || defaults;
+const dayNames = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
+const dayShort = ['ی','د','س','چ','پ','ج','ش'];
+
+function dateKey(d=new Date()){return d.toISOString().slice(0,10);}
+function isWeekend(d=new Date()){const x=d.getDay(); return x===0 || x===6;}
+function listForDate(d=new Date()){return isWeekend(d)?cfg.weekend:cfg.work;}
+function getState(key=dateKey()){return JSON.parse(localStorage.getItem('routine_state_'+key) || '{}');}
+function setState(s,key=dateKey()){localStorage.setItem('routine_state_'+key, JSON.stringify(s));}
+function faDate(d=new Date()){return new Intl.DateTimeFormat('fa-IR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}).format(d);}
+function renderHeader(){document.getElementById('todayLabel').textContent = faDate(); document.title=cfg.appName; document.querySelector('.brand h1').textContent=cfg.appName;}
+function renderToday(){
+  const items=listForDate(); const state=getState(); const box=document.getElementById('todayTasks');
+  box.innerHTML=''; let done=0;
+  items.forEach((it,i)=>{
+    const checked=!!state[i]; if(checked) done++;
+    const row=document.createElement('div'); row.className='task'+(checked?' done':'');
+    row.innerHTML=`<input class="check" type="checkbox" ${checked?'checked':''}><div class="taskMain"><div class="taskTitle">${it[1]}</div><div class="taskTime">${it[0]}</div></div>`;
+    row.querySelector('input').addEventListener('change',e=>{const s=getState(); if(e.target.checked)s[i]=true; else delete s[i]; setState(s); renderToday();});
+    box.appendChild(row);
+  });
+  const pct=items.length?Math.round(done/items.length*100):0;
+  document.getElementById('progressText').textContent=faDigits(pct)+'٪';
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('modeText').textContent=isWeekend()?'برنامه آخر هفته':'برنامه روزهای کاری';
+}
+function renderWeek(){
+  const wrap=document.getElementById('weekDays'); wrap.innerHTML='';
+  const today=new Date(); const offset=(today.getDay()+6)%7; // Monday index
+  const monday=new Date(today); monday.setDate(today.getDate()-offset);
+  for(let i=0;i<7;i++){
+    const d=new Date(monday); d.setDate(monday.getDate()+i);
+    const b=document.createElement('button'); b.className='dayBtn'+(dateKey(d)===dateKey(today)?' active':'');
+    b.textContent=dayShort[d.getDay()]+' '+faDigits(d.getDate());
+    b.onclick=()=>showWeekDetail(d); wrap.appendChild(b);
+  }
+  showWeekDetail(today);
+}
+function showWeekDetail(d){
+  const items=listForDate(d), st=getState(dateKey(d)), done=items.filter((_,i)=>st[i]).length;
+  const box=document.getElementById('weekDetail');
+  box.innerHTML=`<div class="dayBox"><h3>${faDate(d)}</h3><div class="muted">پیشرفت: ${faDigits(items.length?Math.round(done/items.length*100):0)}٪</div><div class="note" style="margin-top:8px">${isWeekend(d)?'برنامه آخر هفته':'برنامه روزهای کاری'} · ${faDigits(done)} از ${faDigits(items.length)} فعالیت انجام شده</div></div>`;
+}
+function fillSettings(){
+  document.getElementById('appNameInput').value=cfg.appName;
+  document.getElementById('notifyInput').value=cfg.notify;
+  document.getElementById('workInput').value=cfg.work.map(x=>x.join(' | ')).join('\\n');
+  document.getElementById('weekendInput').value=cfg.weekend.map(x=>x.join(' | ')).join('\\n');
+}
+function parseLines(v){return v.split('\\n').map(s=>s.trim()).filter(Boolean).map(line=>{const p=line.split('|'); return [p[0]?.trim()||'',p.slice(1).join('|').trim()||''];});}
+document.querySelectorAll('.tabBtn').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('.tabBtn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+  document.querySelectorAll('.tabPage').forEach(p=>p.style.display='none'); document.getElementById(btn.dataset.tab).style.display='block';
+  if(btn.dataset.tab==='week')renderWeek(); if(btn.dataset.tab==='settings')fillSettings();
+}));
+document.getElementById('saveBtn').onclick=()=>{
+  cfg={appName:document.getElementById('appNameInput').value.trim()||defaults.appName, notify:document.getElementById('notifyInput').value, work:parseLines(document.getElementById('workInput').value), weekend:parseLines(document.getElementById('weekendInput').value)};
+  localStorage.setItem('routine_cfg',JSON.stringify(cfg)); renderHeader(); renderToday(); alert('تنظیمات ذخیره شد');
+};
+document.getElementById('resetBtn').onclick=()=>{cfg=JSON.parse(JSON.stringify(defaults)); localStorage.setItem('routine_cfg',JSON.stringify(cfg)); fillSettings(); renderHeader(); renderToday(); alert('تنظیمات به حالت پیش‌فرض برگشت')};
+document.getElementById('clearBtn').onclick=()=>{localStorage.removeItem('routine_state_'+dateKey()); renderToday(); alert('وضعیت امروز پاک شد')};
+renderHeader(); renderToday();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
